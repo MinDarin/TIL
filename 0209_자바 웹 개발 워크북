@@ -1,0 +1,53 @@
+0209 -> Action 태그
+액션태그란 : JSP에서 기본으로 제공하는 태그들, 액션태그와 커스텀 태그는 JSP 엔진을 통해 각각에 맞는 자바 코드로 변형됨 즉, 코드 사용을 최소화 하여 구현하기 쉽고 유지보수하기 편하도록 제공하는 태그들임.
+
+JavaBean ≒ 자바 클래스의 인스턴스, 주로 VO 객체 꺼내는 태그로 사용함.
+application(ServletContext), session(HttpSession), request(ServletRequest), page(JSPpage 하위클, 얘가 디폴트)에 저장된 자바 객체를 꺼내거나 없으면 새로 생성함.
+액션태그는 <jsp:useBean>을 자바 인스턴스를 준비(꺼내거나 새로이 생성)
+javaBean에 프로퍼티 설정 액션 태그 : <jsp:setProperty:>
+꺼내는건 <jsp:getProperty>
+즉, useBean은 getAttribute / VO객체 생성 후 보관소 저장 합본 같은 것
+책 예제를 따라서 해보자면
+
+<jsp:useBean id=“members(객체이름) 즉, 키값”
+		scope=“application|session|request|page 중 하나, 객체를 저장할 보관소”
+		class=“VO객체 참조변수 선언 시 클래스 타입 ex)java.util.ArrayList”
+		type=“참조변수 / 형변환 시 사용할 타입의 이름, 클래스 / 인터페이스 이름이 오며, 선언하지 않을 경우 class의 값으로 처리. ex)java.util.ArrayList<Member>”/>  
+이걸 JSP엔진에 의해 변환되면
+java.util.ArrayList<Member> members = (java.util.ArrayList<Member>)
+					request.	getAttribute(“members”);
+if(members==null)		
+{
+	members = new java.util.ArrayList();
+	request.setAttribute(“members”);가 되겠지.
+} ->솔직히 이건 왜 하는지 의문이다. 빈 객체를 왜 선언하고 저장해 놓는 것인가... 그냥 에러처리 같긴한데. 서원햄한테 질문해봐야지
+Answer: 아마 에러 핸들링인 것 같다. 
+즉, 빈 객체 vs null로 추가 작업시 (add 등) null일 경우 에러 발생. (반복문 작업 시 더욱..)
+
+id속성: 꺼낼 때 사용하는 키 값, 꺼낸 걸 저장 하기 위한 참조변수 이름,  없으면 새 객체를 받을 참조변수 이름이며, 생성 후 보관소에 저장할 때 키 값. 필수속성
+
+scope 속성 : 저장할 보관소 선택 (디폴트 값은 page)
+
+class 속성 : 자바 객체를 생성할 때 사용하는 클래스(보관소에 객체가 없으면 이 클래스의 객체 생성 후 보관소 저장),필수속성 (type미선언시 class 속성 값으로 참조변수 선언함.), 패키지를 포함한 full qualified name이어야함.(인터페이스는 사용할 수 없다.)
+
+type 속성 : 참조변수 선언 할 때 사용하는 이름 (보관소에서 꺼낸 객체를 받을 참조변수), 클래스나 인터페이스 이름이 올 수 있음.
+<jsp:include> <jsp:forward> html / 텍스트파일 (정적자원) 혹은 다른 서블릿이나 jsp로(동적 자원) 제어권을 넘기는 액션태그
+include와 forward의 차이 : include는 제어권을 부여해 주었다가 넘어간 서블릿(jsp)의 작업이 끝나면 호출을 하였던 서블릿(jsp)로 제어권이 돌아오는 반면 forward는 돌아오지 않음
+=> out등과 같이 writer객체에 저장해 두었던 내용이 날라가느냐 아니냐의 차이로도 구분함
+include의 경우 호출한 서블릿에서 response의 out객체에 담아둔 내용이 날아가지 않는 반면, forward의 경우 제어권이 넘어감과 동시에 기존에 담아두었던 내용 다 날림.
+
+<jsp:param> : ServletRequest 객체 request에 매개변수를 추가하는 코드
+아마 setAttribute 메소드랑 비슷한 거 같은데...
+    //(...매개변수면 파라미터로 해서 생성자한테 날린다고?? 이건 좀 아닌거 같은데.... 차라리 위에가 맞는 듯...)
+<jsp:param name =“” value = “”> 꼴이고 이거만 단독으로 쓰는 것이 아니라
+<jsp:include>
+	<jsp:param name =“” value = “”>
+</jsp:include>		(forward도 사용방식 동일), 이렇게 쓰거나
+
+<jsp:pulgin type=“” code=“” codebase=“”>
+	<jsp:params>
+		<jsp:param name =“” value = “”>
+	</jsp:params>
+</jsp:plugin>  이런식으로 쓰기도 한다.
+<jsp:plugin> :OBJECT / EMBED HTML태그
+<jsp:element> : xml / HTML태그 
